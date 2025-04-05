@@ -61,7 +61,7 @@ const CreateProduct = () => {
 
       if (data?.success) {
         toast.success("Product Created Successfully");
-        navigate("/dashboard/admin/products");
+        navigate("/dashboard/admin/product");
       } else {
         toast.error(data?.message || "Failed to create product");
       }
@@ -92,7 +92,7 @@ const CreateProduct = () => {
                     <div className="mb-3">
                       <label className="form-label">Category</label>
                       <Select
-                        bordered={false}
+                        variant="outlined"  
                         placeholder="Select a category"
                         size="large"
                         showSearch
@@ -188,7 +188,7 @@ const CreateProduct = () => {
                     <div className="mb-3">
                       <label className="form-label">Shipping</label>
                       <Select
-                        bordered={false}
+                        variant="outlined"  
                         placeholder="Select Shipping"
                         size="large"
                         showSearch

@@ -82,7 +82,7 @@ const UpdateProduct = () => {
 
       if (data?.success) {
         toast.success("Product Updated Successfully");
-        navigate("/dashboard/admin/product"); // Fix: Navigate to the correct route
+        navigate("/dashboard/admin/product");
       } else {
         toast.error(data?.message);
       }
@@ -104,7 +104,7 @@ const UpdateProduct = () => {
 
       if (data?.success) {
         toast.success("Product Deleted Successfully");
-        navigate("/dashboard/admin/product"); // Fix: Navigate to the correct route
+        navigate("/dashboard/admin/products");
       } else {
         toast.error(data?.message);
       }
@@ -129,7 +129,7 @@ const UpdateProduct = () => {
                 <div className="mb-3">
                   <label className="form-label">Category</label>
                   <Select
-                    bordered={false}
+                    variant="outlined"
                     placeholder="Select a category"
                     size="large"
                     showSearch
@@ -172,12 +172,17 @@ const UpdateProduct = () => {
                       style={{ maxHeight: "200px" }}
                     />
                   ) : (
-                    <img
-                      src={`/api/v1/product/product-photo/${id}`}
-                      alt="product_photo"
-                      className="img-fluid rounded"
-                      style={{ maxHeight: "200px" }}
-                    />
+                    id && (
+                      <img
+                        src={`/api/v1/product/product-photo/${id}`}
+                        alt="product_photo"
+                        className="img-fluid rounded"
+                        style={{ maxHeight: "200px" }}
+                        onError={(e) => {
+                          e.target.src = "https://via.placeholder.com/300x200?text=No+Image+Available";
+                        }}
+                      />
+                    )
                   )}
                 </div>
 
@@ -231,7 +236,7 @@ const UpdateProduct = () => {
                 <div className="mb-3">
                   <label className="form-label">Shipping</label>
                   <Select
-                    bordered={false}
+                    variant="outlined"
                     placeholder="Select Shipping"
                     size="large"
                     showSearch

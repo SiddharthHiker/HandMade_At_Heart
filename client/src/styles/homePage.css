@@ -1,0 +1,132 @@
+/* homePage.css */
+.home-page {
+    padding: 20px;
+    background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+  }
+  
+  .filters-section {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .filter-card {
+    margin-bottom: 20px;
+  }
+  
+  .filter-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 15px;
+  }
+  
+  .category-filters,
+  .price-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .filter-item {
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+    color: #34495e;
+  }
+  
+  .filter-item .ant-checkbox-inner,
+  .filter-item .ant-radio-inner {
+    width: 20px;
+    height: 20px;
+    border-color: #3498db;
+  }
+  
+  .filter-item .ant-checkbox-checked .ant-checkbox-inner,
+  .filter-item .ant-radio-checked .ant-radio-inner {
+    background-color: #3498db;
+    border-color: #3498db;
+  }
+  
+  .filter-item .ant-checkbox-wrapper:hover .ant-checkbox-inner,
+  .filter-item .ant-radio-wrapper:hover .ant-radio-inner {
+    border-color: #3498db;
+  }
+  
+  .reset-button {
+    width: 100%;
+    margin-top: 20px;
+    background-color: #e74c3c;
+    border: none;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+  }
+  
+  .reset-button:hover {
+    background-color: #c0392b;
+  }
+  
+  .products-section {
+    padding: 20px;
+  }
+  
+  .products-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 20px;
+  }
+  
+  .product-list {
+    gap: 20px;
+  }
+  
+  .product-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background-color: #ffffff;
+  }
+  
+  .product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  .product-image {
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px 10px 0 0;
+  }
+  
+  .product-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+  
+  .product-description {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+  }
+  
+  .product-price {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #27ae60;
+  }
+  
+  .load-more-button {
+    width: 100%;
+    max-width: 200px;
+    background-color: #f39c12;
+    border: none;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+  }
+  
+  .load-more-button:hover {
+    background-color: #e67e22;
+  }

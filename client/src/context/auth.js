@@ -1,21 +1,30 @@
-import { useState,useEffect, useContext, createContext } from "react";
+import { useState, useEffect, useContext, createContext } from "react";
 import axios from "axios";
+
 const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
   const [auth, setAuth] = useState({
-    user:null,
-    token:"",
+    user: null,
+    token: "",
   });
-  
-  // default axios 
-  axios.defaults.headers.common['Authorization'] = auth?.token
+
+  // Set axios defaults
+  useEffect(() => {
+    axios.defaults.headers.common['Authorization'] = auth?.token || '';
+  }, [auth?.token]);
+
+  // Initialize from localStorage
   useEffect(() => {
     const data = localStorage.getItem("auth");
     if (data) {
-        setAuth(JSON.parse(data));  // ✅ Directly update auth state
+      try {
+        setAuth(JSON.parse(data));
+      } catch (err) {
+        localStorage.removeItem("auth");
+      }
     }
-}, []);  // ✅ Empty dependency array - useEffect sirf ek baar chalega
+  }, []);
 
   return (
     <AuthContext.Provider value={[auth, setAuth]}>
@@ -24,7 +33,6 @@ const AuthProvider = ({ children }) => {
   );
 };
 
-// custom hook
 const useAuth = () => useContext(AuthContext);
 
-export {useAuth, AuthProvider};
+export { useAuth, AuthProvider };
