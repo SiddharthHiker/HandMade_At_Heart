@@ -5,8 +5,7 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { Select } from "antd";
 import { useNavigate, useParams } from "react-router-dom";
-import "../../styles/updateProduct.css"; // Custom CSS for additional styling
-
+import "../../styles/updateProduct.css"; 
 const { Option } = Select;
 
 const UpdateProduct = () => {

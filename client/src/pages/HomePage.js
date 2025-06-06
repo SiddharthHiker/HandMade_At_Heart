@@ -1,20 +1,40 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Layout from "./../components/Layout/Layout";
 import axios from "axios";
-import { Checkbox, Radio, Drawer, Spin, Button, Badge, message } from "antd";
+import { 
+  Checkbox, 
+  Radio, 
+  Drawer, 
+  Spin, 
+  Button, 
+  Badge, 
+  message, 
+  Card, 
+  Tag, 
+  Space, 
+  Divider,
+  Skeleton 
+} from "antd";
 import { Prices } from "../components/Prices";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "../context/cart";
 import { 
   FilterOutlined, 
   RedoOutlined, 
   ShoppingCartOutlined, 
   EyeOutlined,
-  CloseOutlined 
+  CloseOutlined,
+  StarFilled,
+  FireFilled
 } from "@ant-design/icons";
 import "../styles/homePage.css";
+import toast, { Toaster } from "react-hot-toast";
+
+const { Meta } = Card;
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const [cart, setCart] = useCart();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [checked, setChecked] = useState([]);
@@ -72,13 +92,18 @@ const HomePage = () => {
     getTotal();
   }, [getAllCategory, getTotal]);
 
-  // Get products
+  // Get products with price normalization
   const getAllProducts = useCallback(async () => {
     try {
       setLoading(true);
       const { data } = await axios.get(`${API_URL}/api/v1/product/product-list/${page}`);
       setLoading(false);
-      setProducts(data.products);
+      // Normalize prices to numbers
+      const normalizedProducts = data.products.map(product => ({
+        ...product,
+        price: Number(product.price) || 0
+      }));
+      setProducts(normalizedProducts);
     } catch (error) {
       setLoading(false);
       console.error("Error fetching products:", error);
@@ -86,17 +111,19 @@ const HomePage = () => {
     }
   }, [API_URL, page]);
 
-  // Load more products
+  // Load more products with price normalization
   const loadMore = useCallback(async () => {
     try {
       setLoading(true);
       const { data } = await axios.get(`${API_URL}/api/v1/product/product-list/${page}`);
       setLoading(false);
       setProducts(prev => {
-        // Ensure no duplicates by checking IDs
-        const newProducts = data?.products.filter(
-          newProd => !prev.some(existingProd => existingProd._id === newProd._id)
-        );
+        const newProducts = data?.products
+          .filter(newProd => !prev.some(existingProd => existingProd._id === newProd._id))
+          .map(product => ({
+            ...product,
+            price: Number(product.price) || 0
+          }));
         return [...prev, ...newProducts];
       });
     } catch (error) {
@@ -147,7 +174,12 @@ const HomePage = () => {
           radio,
         });
         setLoading(false);
-        setProducts(data?.products || []);
+        // Normalize prices in filtered products
+        const normalizedProducts = (data?.products || []).map(product => ({
+          ...product,
+          price: Number(product.price) || 0
+        }));
+        setProducts(normalizedProducts);
       }, 300);
     } catch (error) {
       console.error("Error filtering products:", error);
@@ -286,11 +318,31 @@ const HomePage = () => {
 
   return (
     <Layout title={"All Products - Best Offers"}>
-      <div className="container-fluid home-container">
-        {/* Filter Toggle Button - Visible on all screens */}
-        <div className="mb-3 d-flex justify-content-between align-items-center">
-          <h2 className="products-title m-0">All Products</h2>
-          <Badge count={activeFilterCount} offset={[10, 0]}>
+      {/* Global Toaster Configuration */}
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 2000,
+          style: {
+            background: '#4bb543',
+            color: '#fff',
+            minWidth: '250px',
+            fontSize: '16px',
+            textAlign: 'center',
+            borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+          },
+        }}
+      />
+      
+      <div className="container-fluid home-container px-lg-4">
+        {/* Page Header with Filter Toggle */}
+        <div className="d-flex justify-content-between align-items-center mb-4 py-3 border-bottom">
+          <div>
+            <h1 className="mb-1">Shop Products</h1>
+            <p className="text-muted mb-0">{total} products available</p>
+          </div>
+          <Badge count={activeFilterCount} size="small" offset={[-5, 10]}>
             <Button
               type={sidebarCollapsed || mobileFiltersOpen ? "primary" : "default"}
               icon={<FilterOutlined />}
@@ -305,17 +357,17 @@ const HomePage = () => {
               className="filter-toggle-btn"
             >
               {windowWidth < 992 
-                ? (mobileFiltersOpen ? 'Hide Filters' : 'Show Filters')
+                ? (mobileFiltersOpen ? 'Hide Filters' : 'Filters')
                 : (sidebarCollapsed ? 'Show Filters' : 'Hide Filters')}
             </Button>
           </Badge>
         </div>
 
-        <div className="row g-3">
-          {/* Desktop Filters Section - Can be toggled */}
+        <div className="row g-4">
+          {/* Desktop Filters Section */}
           {windowWidth >= 992 && !sidebarCollapsed && (
             <div className="col-lg-3 col-md-4 filters-column">
-              <div className="shadow-sm rounded-3 bg-white h-100 sticky-top" style={{ top: '80px' }}>
+              <div className="shadow-sm rounded-3 bg-white h-100 sticky-top" style={{ top: '100px' }}>
                 {renderFilters()}
               </div>
             </div>
@@ -324,7 +376,22 @@ const HomePage = () => {
           {/* Mobile Filters Drawer */}
           {windowWidth < 992 && (
             <Drawer
-              title="Filters"
+              title={
+                <div className="d-flex justify-content-between align-items-center">
+                  <span>Filters</span>
+                  <Badge count={activeFilterCount} size="small">
+                    <Button
+                      type="text"
+                      icon={<RedoOutlined />}
+                      onClick={() => {
+                        setChecked([]);
+                        setRadio([]);
+                      }}
+                      size="small"
+                    />
+                  </Badge>
+                </div>
+              }
               placement="left"
               width={300}
               onClose={() => setMobileFiltersOpen(false)}
@@ -343,83 +410,162 @@ const HomePage = () => {
             </Drawer>
           )}
 
-          {/* Products Section - Adjusts based on sidebar state */}
+          {/* Products Section */}
           <div className={`${windowWidth >= 992 ? (sidebarCollapsed ? 'col-12' : 'col-lg-9 col-md-8') : 'col-12'}`}>
-            <div className="products-header mb-4">
-              <p className="text-muted">{total} products available</p>
-            </div>
-
             {loading && products.length === 0 ? (
-              <div className="text-center py-5">
-                <Spin size="large" />
+              <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-3 g-4">
+                {[...Array(6)].map((_, i) => (
+                  <div className="col" key={`skeleton-${i}`}>
+                    <Card className="h-100">
+                      <Skeleton.Image active style={{ width: '100%', height: '200px' }} />
+                      <Card.Meta
+                        title={<Skeleton.Input active size="small" />}
+                        description={
+                          <>
+                            <Skeleton paragraph={{ rows: 2 }} active />
+                            <Skeleton.Button active size="small" />
+                          </>
+                        }
+                      />
+                      <div className="p-3">
+                        <Skeleton.Button active block />
+                        <Skeleton.Button active block className="mt-2" />
+                      </div>
+                    </Card>
+                  </div>
+                ))}
               </div>
             ) : (
               <>
-                <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-3 g-4">
-                  {products?.map((p) => (
-                    <div className="col" key={`product-${p._id}-${p.slug}`}>
-                      <div className="card h-100 product-card shadow-sm border-0">
-                        <div className="product-image-container">
-                          <img
-                            src={`${API_URL}/api/v1/product/product-photo/${p._id}`}
-                            className={`card-img-top product-image ${loadedImages[p._id] ? '' : 'image-loading'}`}
-                            alt={p.name}
-                            loading="lazy"
-                            onLoad={() => setLoadedImages(prev => ({...prev, [p._id]: true}))}
-                          />
-                          <div className="product-badge">{p?.category?.name}</div>
-                        </div>
-                        <div className="card-body">
-                          <h5 className="card-title product-name">{p.name}</h5>
-                          <p className="card-text product-description text-muted">
-                            {p.description.substring(0, 60)}...
-                          </p>
-                          <div className="d-flex justify-content-between align-items-center">
-                            <h5 className="product-price m-0 text-primary">
-                              ${p.price}
-                            </h5>
-                            <div className="product-rating text-warning">
-                              ★★★★☆
-                            </div>
-                          </div>
-                        </div>
-                        <div className="card-footer bg-white border-0">
-                          <div className="d-grid gap-2">
-                            <Button
-                              type="primary"
-                              icon={<EyeOutlined />}
-                              onClick={() => navigate(`/product/${p.slug}`)}
-                            >
-                              View Details
-                            </Button>
-                            <Button
-                              icon={<ShoppingCartOutlined />}
-                              onClick={() => {
-                                // Add to cart functionality
-                                message.success(`${p.name} added to cart`);
-                              }}
-                            >
-                              Add to Cart
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Load More Button */}
-                {products.length > 0 && products.length < total && (
-                  <div className="text-center mt-4">
+                {products.length === 0 && !loading ? (
+                  <div className="text-center py-5">
+                    <img
+                      src="/images/no-products.svg"
+                      alt="No products found"
+                      style={{ maxWidth: '300px', opacity: 0.7 }}
+                      className="mb-4"
+                    />
+                    <h4>No products found</h4>
+                    <p className="text-muted">Try adjusting your filters or search terms</p>
                     <Button
                       type="primary"
-                      size="large"
-                      loading={loading}
-                      onClick={() => setPage(page + 1)}
+                      onClick={() => {
+                        setChecked([]);
+                        setRadio([]);
+                      }}
                     >
-                      {loading ? "Loading..." : "Load More Products"}
+                      Clear all filters
                     </Button>
                   </div>
+                ) : (
+                  <>
+                    <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-3 g-4">
+                      {products?.map((p) => (
+                        <div className="col" key={`product-${p._id}-${p.slug}`}>
+                          <Card
+                            hoverable
+                            className="h-100 product-card"
+                            cover={
+                              <div className="product-image-container">
+                                <img
+                                  src={`${API_URL}/api/v1/product/product-photo/${p._id}`}
+                                  alt={p.name}
+                                  loading="lazy"
+                                  className={`product-image ${loadedImages[p._id] ? 'loaded' : 'loading'}`}
+                                  onLoad={() => setLoadedImages(prev => ({...prev, [p._id]: true}))}
+                                />
+                                {p?.category?.name && (
+                                  <Tag color="blue" className="product-badge">
+                                    {p.category.name}
+                                  </Tag>
+                                )}
+                                {p?.trending && (
+                                  <Tag 
+                                    icon={<FireFilled />} 
+                                    color="orange" 
+                                    className="product-trending-badge"
+                                  >
+                                    Trending
+                                  </Tag>
+                                )}
+                              </div>
+                            }
+                            actions={[
+                              <Button
+                                type="text"
+                                icon={<EyeOutlined />}
+                                onClick={() => navigate(`/product/${p.slug}`)}
+                                block
+                              >
+                                View Details
+                              </Button>,
+                               <Button
+                                type="primary"
+                                icon={<ShoppingCartOutlined />}
+                                onClick={() => {
+                                  const existingIndex = cart.findIndex(item => item._id === p._id);
+                                  let updatedCart = [...cart];
+
+                                  if (existingIndex > -1) {
+                                    const existingItem = updatedCart[existingIndex];
+                                    updatedCart[existingIndex] = {
+                                      ...existingItem,
+                                      quantity: (existingItem.quantity || 1) + 1,
+                                    };
+                                    toast('Increased quantity in cart');
+                                  } else {
+                                    updatedCart.push({ ...p, quantity: 1 });
+                                    toast.success('Added to cart');
+                                  }
+
+                                  setCart(updatedCart);
+                                  localStorage.setItem("cart", JSON.stringify(updatedCart));
+                                }}
+                                block
+                              >
+                                Add to Cart
+                              </Button>
+                            ]}
+                          >
+                            <Meta
+                              title={p.name}
+                              description={
+                                <>
+                                  <div className="text-truncate-2 mb-2" style={{ height: '40px' }}>
+                                    {p.description}
+                                  </div>
+                                  <Divider className="my-2" />
+                                  <Space className="w-100 justify-content-between">
+                                    <span className="text-primary fw-bold">
+                                      ${Number(p.price).toFixed(2)}
+                                    </span>
+                                    <span className="text-warning">
+                                      <StarFilled /> {p.rating || '4.5'}
+                                    </span>
+                                  </Space>
+                                </>
+                              }
+                            />
+                          </Card>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Load More Button */}
+                    {products.length > 0 && products.length < total && (
+                      <div className="text-center mt-5">
+                        <Button
+                          type="primary"
+                          size="large"
+                          loading={loading}
+                          onClick={() => setPage(page + 1)}
+                          style={{ minWidth: '200px' }}
+                        >
+                          {loading ? "Loading..." : "Load More"}
+                        </Button>
+                      </div>
+                    )}
+                  </>
                 )}
               </>
             )}

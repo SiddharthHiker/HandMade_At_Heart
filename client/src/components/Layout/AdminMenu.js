@@ -36,6 +36,13 @@ const AdminMenu = () => {
             Products
           </NavLink>
           <NavLink
+            to="/dashboard/admin/orders"
+            className={navLinkClass}
+          >
+            <i className="fas fa-shopping-bag me-2"></i>
+            Orders
+          </NavLink>
+          <NavLink
             to="/dashboard/admin/users"
             className={navLinkClass}
           >
