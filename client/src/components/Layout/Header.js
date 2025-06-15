@@ -113,6 +113,13 @@ const Header = () => {
                       Dashboard
                     </NavLink>
                   </li>
+                  {auth?.user?.role === 1 && (
+                    <li>
+                      <NavLink to="/dashboard/admin/orders" className="dropdown-item">
+                        Orders
+                      </NavLink>
+                    </li>
+                  )}
                   <li>
                     <NavLink
                       onClick={handleLogout}
